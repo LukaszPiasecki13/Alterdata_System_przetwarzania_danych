@@ -27,8 +27,10 @@ class TransactionView(APIView):
                 errors.append({"row": row, 
                                "errors": transaction_serializer.errors})
                 
+        print(f"Errors: {errors}")  # For debugging purposes, you can log this instead
 
-
+    def get(self, request):
+        return render(request, 'transactions.html', {})
 
 
 

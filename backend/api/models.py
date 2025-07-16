@@ -1,12 +1,13 @@
 from django.db import models
+import uuid
 
 class Transaction(models.Model):
-    transaction_id = models.AutoField(primary_key=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    transaction_id = models.UUIDField(primary_key=True)
+    timestamp = models.DateTimeField()
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=3)
-    customer_id = models.IntegerField()
-    product_id = models.IntegerField()
+    customer_id = models.UUIDField()
+    product_id = models.UUIDField()
     quantity = models.IntegerField()
 
     def __str__(self):

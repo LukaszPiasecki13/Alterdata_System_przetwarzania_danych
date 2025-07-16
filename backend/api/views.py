@@ -1,14 +1,17 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from .serializers import CsvFileSerializer, TransactionSerializer
+from .models import Transaction
+from .paginators import TransactionPaginator
 
 import csv
 import io
 
 
 
-class TransactionView(APIView):
+class TransactionUploadView(APIView):
     def post(self, request):
         csv_file_serializer = CsvFileSerializer(data = request.data)
         csv_file_serializer.is_valid(raise_exception=True)
@@ -29,9 +32,32 @@ class TransactionView(APIView):
                 
         print(f"Errors: {errors}")  # For debugging purposes, you can log this instead
 
-    def get(self, request):
-        return render(request, 'transactions.html', {})
 
 
+class TransactionListView(ListAPIView):
+    serializer_class = TransactionSerializer
+    pagination_class = TransactionPaginator
 
-        
+    def get_queryset(self):
+        queryset = Transaction.objects.all()
+
+        customer_id = self.request.query_params.get('customer_id', None)
+        product_id = self.request.query_params.get('product_id', None)
+
+        if customer_id:
+            queryset = queryset.filter(customer_id = customer_id)
+
+        if product_id:
+            queryset = queryset.filter(product_id = product_id)
+
+        return queryset
+
+
+class TransactionDetailView(RetrieveAPIView):
+    serializer_class = TransactionSerializer
+    queryset = Transaction.objects.all()
+
+    def get_object(self):
+        transaction_id = self.kwargs.get('transaction_id', None)
+        return Transaction.objects.get(transaction_id=transaction_id)
+

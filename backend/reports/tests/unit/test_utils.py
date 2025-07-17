@@ -2,7 +2,7 @@ import pytest
 from uuid import uuid4
 from decimal import Decimal
 
-from reports.tests.TransactionFactory import TransactionFactory
+from lib.TransactionFactory import TransactionFactory
 from api.models import Transaction
 from reports.lib.constants import EXCHANGE_RATES
 from reports.lib.utils import calculate_total_amount_PLN, calculate_total_unique_field
@@ -62,5 +62,3 @@ class TestViewsAuxiliaryMethods:
 
             assert unique_count == expected_unique_count
 
-
-#TODO: Add tests for ProductSummaryView

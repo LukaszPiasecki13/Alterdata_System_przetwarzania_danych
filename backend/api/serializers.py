@@ -4,7 +4,7 @@ from .models import Transaction
 import uuid
 from datetime import datetime
 from decimal import Decimal
-
+import csv
 
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -58,9 +58,23 @@ class CsvFileSerializer(serializers.Serializer):
             raise serializers.ValidationError("File must be a CSV.")
         if file.size > 50 * 1024 * 1024:  # 50 MB limit
             raise serializers.ValidationError(f"File size must not exceed 5 MB, is {file.size} B.")
-        if not file.content_type == 'text/csv':
-            raise serializers.ValidationError("File must be a valid CSV file.")
         if not file:
             raise serializers.ValidationError("File cannot be empty.")
         
+        try:
+            decoded_file = file.read().decode('utf-8')
+            file.seek(0) 
+            csv.Sniffer().sniff(decoded_file.splitlines()[0])
+        except Exception:
+            raise serializers.ValidationError("Uploaded file is not a valid CSV.")
+        
         return file
+
+
+class TransactionListSerializer(serializers.Serializer):
+    customer_id = serializers.UUIDField(required=False, allow_null=True)
+    product_id = serializers.UUIDField(required=False, allow_null=True)
+
+class TransactionDetailViewSerializer(serializers.Serializer):
+    transaction_id = serializers.UUIDField(required=True)
+    

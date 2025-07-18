@@ -17,6 +17,8 @@ from .tasks import process_csv_file
 
 
 class TransactionUploadView(APIView):
+    """View to handle CSV file uploads for processing transactions."""
+    
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
@@ -39,6 +41,8 @@ class TransactionUploadView(APIView):
             return Response({"error": "An error occurred while processing the file."}, status=500)
 
 class TaskStatusView(APIView):
+    """View to check the status of a Celery task."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request, task_id):
@@ -59,6 +63,8 @@ class TaskStatusView(APIView):
 
 
 class TransactionListView(ListAPIView):
+    """View to list transactions with optional filtering by customer_id and product_id."""
+
     permission_classes = [IsAuthenticated]
     serializer_class = TransactionSerializer
     pagination_class = TransactionPaginator
@@ -89,6 +95,8 @@ class TransactionListView(ListAPIView):
 
 
 class TransactionDetailView(RetrieveAPIView):
+    """View to retrieve details of a specific transaction by transaction_id."""
+    
     permission_classes = [IsAuthenticated]
     serializer_class = TransactionSerializer
     queryset = Transaction.objects.all()

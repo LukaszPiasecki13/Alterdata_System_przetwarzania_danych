@@ -6,6 +6,7 @@ from lib.logging_config import logger
 
 
 def calculate_total_amount_PLN(transactions: QuerySet[Transaction] ) -> Decimal:
+    """Calculate the total amount of transactions in PLN."""
 
     total_amount = 0
     for transaction in transactions:
@@ -19,6 +20,8 @@ def calculate_total_amount_PLN(transactions: QuerySet[Transaction] ) -> Decimal:
     return total_amount
 
 def calculate_total_unique_field(transactions: QuerySet[Transaction], field: str) -> int:
+    """Calculate the total number of unique values for a given field in transactions."""
+    
     unique_fields = set(transactions.values_list(field, flat=True))
 
     return len(unique_fields)

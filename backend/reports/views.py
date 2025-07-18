@@ -12,6 +12,8 @@ from lib.logging_config import logger
 
 
 class CustomerSummaryView(APIView):
+    """View to retrieve summary of transactions for a specific customer."""
+
     permission_classes = [IsAuthenticated]
     def get(self, request, customer_id):
         input_data_serializer = CustomerSummarySerializer(data=request.query_params)
@@ -52,6 +54,8 @@ class CustomerSummaryView(APIView):
 
 
 class ProductSummaryView(APIView):
+    """View to retrieve summary of transactions for a specific product."""
+    
     permission_classes = [IsAuthenticated]
     def get(self, request, product_id):
         try:

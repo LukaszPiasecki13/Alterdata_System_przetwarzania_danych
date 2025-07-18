@@ -8,6 +8,8 @@ from datetime import datetime, timedelta, timezone
 
 
 class TransactionFactory:
+    '''Factory class to generate random transaction data for testing purposes.'''
+
     CURRENCIES = ["PLN", "EUR", "USD"]
     CUST_ID = [
     uuid.UUID("d9d179a4-df12-4dbe-9a2b-41a7cd33d8fb"),
@@ -40,21 +42,26 @@ class TransactionFactory:
         self.prod_id_list = self.PROD_ID.copy()
 
 
-    def _random_amount(self):
+    def _random_amount(self) -> Decimal:
+        """Generate a random amount between 1.0 and 100.0 with two decimal places."""
         return Decimal(f"{random.uniform(1.0, 100.0):.2f}")
 
-    def _random_quantity(self):
+    def _random_quantity(self) -> int:
+        """Generate a random quantity between 1 and 10."""
         return random.randint(1, 10)
 
-    def _random_currency(self):
+    def _random_currency(self) -> str:
+        """Select a random currency from the predefined list."""
         return random.choice(self.CURRENCIES)
 
-    def _random_timestamp(self):
+    def _random_timestamp(self) -> datetime:
+        """Generate a random timestamp within the last year."""
         now = datetime.now(timezone.utc)
         days_offset = random.randint(-365, 0)
         return now + timedelta(days=days_offset)
     
     def _generate_id(self, id_list=None, allow_duplicates=False):
+        """Generate a random ID from the provided list. If allow_duplicates is False, remove the ID from the list after selection."""
 
         if len(id_list) == 0:
             return None

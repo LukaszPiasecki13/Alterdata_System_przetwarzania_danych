@@ -37,6 +37,39 @@ A web application for processing, analyzing, and reporting financial transaction
      python backend/manage.py runserver
      ```
 
+## Docker Setup
+
+The project includes a `Dockerfile` for the Django backend and a `docker-compose.yml` for orchestrating the application, Celery worker, and Redis.
+
+### Dockerfile
+
+Builds the Django backend image, installs dependencies, and sets up the entrypoint.
+
+### docker-compose.yml
+
+Defines services for:
+- `web`: Django backend
+- `celery`: Celery worker
+- `redis`: Redis broker
+
+
+### Build and Run Procedure
+
+1. Build images and start containers:
+    ```sh
+    docker-compose up --build
+    ```
+2. Apply migrations inside the running web container:
+    ```sh
+    docker-compose exec web python manage.py migrate
+    ```
+3. Access the application at [http://localhost:8000](http://localhost:8000).
+
+To stop and remove containers:
+```sh
+docker-compose down
+```
+
 ## Usage
 
 ### Transaction Import
@@ -221,10 +254,12 @@ a1f3e2b6-78fd-4a2d-9e2b-bd9f4f9a7261,2025-07-13T08:45:10Z,49.50,EUR,77c8ab6a-d8f
 
 ## Technologies
 
-- Python 3.x
-- Django 5.x
+- Python 3.12.3
+- Django 5.2.4
 - Django REST Framework
 - Celery
 - Redis
 - SQLite
+- Docker
+
 

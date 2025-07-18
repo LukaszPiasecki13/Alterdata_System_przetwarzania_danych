@@ -3,15 +3,17 @@ from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from celery.result import AsyncResult
+from rest_framework import status
+
 
 from .serializers import CsvFileSerializer, TransactionSerializer, TransactionListSerializer, TransactionDetailViewSerializer
 from .models import Transaction
 from .paginators import TransactionPaginator
 from lib.logging_config import logger
+from .tasks import process_csv_file
 
-import csv
-import io
 
 
 class TransactionUploadView(APIView):
@@ -22,37 +24,38 @@ class TransactionUploadView(APIView):
             csv_file_serializer = CsvFileSerializer(data=request.data)
             csv_file_serializer.is_valid(raise_exception=True)
             file = csv_file_serializer.validated_data['file']
+            file_data = file.read()
 
-            # File processing and validation
-            try:
-                decoded_file = file.read().decode('utf-8')
-            except UnicodeDecodeError as e:
-                logger.error(f"Error decoding file: {e}")
-                return Response({"error": "Invalid file format. Please upload a valid CSV file."}, status=400)
-
-            # I thought also about csv.reader(decoded_file.splitlines()), to iterate over lines
-            csv_reader = csv.DictReader(io.StringIO(decoded_file))
-
-            errors = []
-            for row in csv_reader:
-                transaction_serializer = TransactionSerializer(data=row)
-                if transaction_serializer.is_valid():   # I am not raising exception if one of the rows is invalid
-                    transaction_serializer.save()
-                else:
-                    errors.append({"row": row,
-                                   "errors": transaction_serializer.errors})
-
-            logger.warning(f"Errors: {errors}")
-            logger.info(f"Uploaded file: {file.name}, size: {file.size} B")
+            task = process_csv_file.delay(file_data)
 
             return Response({
-                "message": "CSV file processed successfully.",
-                "errors": errors
+                "message": "CSV file is being processed.",
+                "file_name": file.name,
+                "task_id": task.id
             }, status=200)
 
         except Exception as e:
             logger.error(f"Error processing file: {e}")
             return Response({"error": "An error occurred while processing the file."}, status=500)
+
+class TaskStatusView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, task_id):
+        result = AsyncResult(task_id)
+        task_result = result.result
+        
+        if isinstance(task_result, Exception):
+            task_result = str(task_result)
+
+        if result.status == 'PENDING':
+            task_result = None
+
+        return Response({
+            "task_id": task_id,
+            "status": result.status,
+            "result": task_result
+        }, status=status.HTTP_200_OK)
 
 
 class TransactionListView(ListAPIView):
